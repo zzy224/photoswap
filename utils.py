@@ -269,7 +269,14 @@ def register_attention_control(model, controller):
         controller = DummyController()
 
     def register_recr(net_, count, place_in_unet):
-        if net_.__class__.__name__ == 'CrossAttention':
+        version = importlib.metadata.version('diffusers')
+        if version == '0.14.0':
+            # for diffusers version in requirements.txt 
+            attn_name = 'CrossAttention'
+        elif version > '0.14.0':
+            # for diffusers version later than 0.14.0, as the name of the module changed 
+            attn_name = 'Attention'
+        if net_.__class__.__name__ == attn_name:
             net_.forward = ca_forward(net_, place_in_unet)
             return count + 1
         elif hasattr(net_, 'children'):
